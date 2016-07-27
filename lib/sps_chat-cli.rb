@@ -4,6 +4,7 @@
 
 
 require 'sps_chat'
+require 'terminfo'
 require 'io/console'
 
 
@@ -48,6 +49,8 @@ class SPSChatCli < SPSChat
 
         @s = savebuffer @s, c
         print "\r#{@userid}>  " + ' ' * @s.length if c == BACKSPACE
+        _, cols = TermInfo.screen_size
+        clear_screen if ("#{@userid}>  " + @s).length > cols
         print "\r#{@userid}> " + @s 
         
       end until c == "\r" or c == "\n" or terminated
@@ -61,6 +64,12 @@ class SPSChatCli < SPSChat
 
     end 
   end
+  
+  private
+  
+  def clear_screen()
+    print "\e[H\e[2J"
+  end
 
   def onincoming(sender, msg, typing_mode=false)    
     
@@ -71,7 +80,7 @@ class SPSChatCli < SPSChat
 
         @user[sender] ||= ''
         @user[sender] = savebuffer @user[sender], c             
-        print "\e[H\e[2J"
+        clear_screen
         print "\r\n" + @history.join("\r\n") + "\r\n"
       else        
         c = "\n"
